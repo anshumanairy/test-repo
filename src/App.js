@@ -1,85 +1,115 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import rawData from "./rawData.json";
+import debounce from "lodash.debounce";
+import { apiWrapper, queryString } from "./helpers/apiWrapper";
 import "./App.css";
-import simple from "./assets/simple.jpg";
 
 const Wrapper = styled.div`
-  margin-top: 100px;
+  margin: 10px auto;
+  max-width: 1240px;
 `;
 
-const CardWrapper = styled.div``;
+const Grid = styled.div`
+  grid-template-columns: repeat(auto-fit, minmax(14%, 1fr));
+`;
 
-const Card = styled.div`
-  margin: 10px;
-  width: 30%;
+const CharacterDiv = styled.div`
   height: 300px;
-  border: 1px solid black;
-  @media (max-width: 768px) {
-    width: 90%;
+  width: 170px;
+  margin: 10px 0px;
+  background: black;
+  &:hover {
+    background: red;
   }
-  @media (min-width: 769px) and (max-width: 1080px) {
-    width: 45%;
-  }
 `;
 
-const Label = styled.label`
-  font-weight: bolder;
+const ImgDiv = styled.div`
+  height: 210px;
+  border-bottom: 4px solid red;
 `;
 
-const Text = styled.div``;
-
-const ImgWrapper = styled.div`
-  height: 150px;
-  border: 1px solid grey;
+const Img = styled.img`
+  object-fit: cover;
+  height: 100%;
 `;
 
-const Image = styled.img`
-  width: 60%;
-`;
-
-const GridWrapper = styled.div`
-  gap: 10px 10px;
-`;
-
-const Box = styled.div`
-  width: 30%;
-  height: 30px;
-  overflow: hidden;
-  border: 1px solid grey;
+const BodyDiv = styled.div`
+  margin: 15px;
 `;
 
 function App() {
+  const [characters, setCharacters] = useState();
+  const [search, setSearch] = useState("");
+  const basicPayload = {
+    limit: 30,
+    ts: "hjdasdjsdh",
+    apikey: "809a01f4b3790788b5174ca177ca898c",
+    hash: "750091f8d7e43ea051c0dc6c33edd2fc",
+  };
+
+  const apiCall = (query) => {
+    apiWrapper({
+      url: `https://gateway.marvel.com/v1/public/characters${queryString(
+        query
+      )}`,
+      method: "get",
+    }).then((response) => {
+      setCharacters(response.data.results);
+    });
+  };
+
+  const debouncedApiCall = debounce((query) => {
+    apiCall(query);
+  }, 2000);
+
+  const handleSearch = (event) => {
+    setSearch(event.target.value);
+    const query = { ...basicPayload };
+    if (event.target.value !== "") {
+      query.nameStartsWith = event.target.value;
+    }
+    debouncedApiCall(query);
+  };
+
+  useEffect(() => {
+    if (!characters) {
+      apiCall({ ...basicPayload });
+    }
+  }, [characters]);
+
   return (
-    <Wrapper className="App dFA jcC fdC">
-      <CardWrapper className="dFA jcC fwW">
-        {rawData.map((data) => {
-          return (
-            <Card className="oS">
-              <ImgWrapper>{/* <Image src={simple} /> */}</ImgWrapper>
-              <div>
-                <Label>Title: </Label>
-                <Text>{data.name}</Text>
-              </div>
-              <div>
-                <Label>Description: </Label>
-                <Text>{data.description}</Text>
-              </div>
-            </Card>
-          );
-        })}
-      </CardWrapper>
-      ;<Label for="cars">Feed</Label>
-      <GridWrapper className="dG">
-        {rawData.map((data) => {
-          return (
-            <div>
-              <Box>{data.name}</Box>
-              <Box>{data.description}</Box>
-            </div>
-          );
-        })}
-      </GridWrapper>
+    <Wrapper>
+      <input
+        value={search}
+        placeholder="Search"
+        onChange={(e) => handleSearch(e)}
+      />
+      <Grid className="dG oH fS">
+        {characters &&
+          characters.map((character, index) => {
+            return (
+              <CharacterDiv key={index} className="oH cP">
+                <a
+                  className="cW tdN"
+                  href={character.urls[0].url}
+                  target="__blank"
+                >
+                  <ImgDiv>
+                    <Img
+                      className="oH oP"
+                      src={
+                        character.thumbnail.path +
+                        "." +
+                        character.thumbnail.extension
+                      }
+                    />
+                  </ImgDiv>
+                  <BodyDiv className="fwB">{character.name}</BodyDiv>
+                </a>
+              </CharacterDiv>
+            );
+          })}
+      </Grid>
     </Wrapper>
   );
 }

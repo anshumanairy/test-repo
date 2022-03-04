@@ -1,6 +1,6 @@
 .App {
 }
- ̰
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -17,13 +17,28 @@
   align-items: center;
 }
 
+.cP {
+  cursor: pointer;
+}
+
 .dF {
   display: flex;
 }
 
+.fS {
+  font-size: small;
+}
+
+.cW {
+  color: white;
+}
+
+.tdN {
+  text-decoration: none;
+}
+
 .dG {
   display: grid;
-  grid-template-columns: repeat(1, auto);
 }
 
 .fdR {
@@ -40,6 +55,14 @@
 
 .fwW {
   flex-wrap: wrap;
+}
+
+.oP {
+  object-position: top center;
+}
+
+.fwB {
+  font-weight: bold;
 }
 
 .oS {
